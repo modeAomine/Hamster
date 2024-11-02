@@ -4,6 +4,7 @@ interface TelegramUser {
     first_name?: string;
     last_name?: string;
     username?: string;
+    balance?: string;
 }
 
 interface TelegramWebApp {
@@ -19,6 +20,7 @@ interface TelegramWebApp {
         setText(text: string): void;
         setColor(color: string): void;
     };
+    initData: string;
     initDataUnsafe: {
         user: TelegramUser;
     };

@@ -1,27 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { RiQuestionAnswerLine, RiWallet3Line } from "react-icons/ri";
 import { GiRuleBook, GiPayMoney, GiTakeMyMoney } from "react-icons/gi";
 import { AiOutlinePercentage, AiOutlineHistory } from "react-icons/ai";
 import { InfoModalProps } from "../../types/InfoModalProps";
+import { BetsProps } from '../../types/BetsProps'
+import { bet_history } from "../../api/api";
 import './ui/InfoModal.css';
 import btcIcon from '../../static/Bitcoin.png';
 import ethIcon from '../../static/Etherium.png';
 
-const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, selectedItem }) => {
+
+const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, selectedItem, token }) => {
     const [visibleCount, setVisibleCount] = useState(5);
     const [selectedCurrency, setSelectedCurrency] = useState('');
     const [amount, setAmount] = useState('');
     const [selectedCrypto, setSelectedCrypto] = useState("Bitcoin");
+    const [bets, setBets] = useState<BetsProps[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [userAccounts, setUserAccounts] = useState<string[]>([]);
+
+    useEffect(() => {
+        const fetchBetHistory = async () => {
+            try {
+                setLoading(true);
+                if (token) {
+                    const data = await bet_history(token);
+                    setBets(data.bets || []); // Извлекаем массив bets из полученного объекта
+                }
+            } catch (error) {
+                console.error('Ошибка получения данных о ставках:', error);
+                setError('Не удалось загрузить историю ставок');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (isOpen) {
+            fetchBetHistory();
+        }
+    }, [isOpen, token]);
+
+    const handleShowMore = () => setVisibleCount((prevCount) => prevCount + 5);
 
     const paymentMethods = [
         { name: 'Bitcoin', icon: btcIcon },
         { name: 'Ethereum', icon: ethIcon }
     ];
 
-    const userAccounts = ['BTC Wallet', 'ETH Wallet'];
+    const handleSelectCrypto = (crypto: string) => setSelectedCrypto(crypto);
 
-    const handleSelectCrypto = (crypto: string) => {
-        setSelectedCrypto(crypto);
+    const handleCopy = (text: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Текст скопирован в буфер обмена!");
+        });
     };
 
     if (!isOpen) return null;
@@ -74,96 +106,38 @@ const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose, selectedItem }) 
                     </>
                 );
             case "history":
-                const initialBets = [
-                    {
-                        id: 1,
-                        gameKey: "game123",
-                        amount: 100,
-                        coefficient: 2.5,
-                        profit: 150, // положительное значение для выигрыша
-                        status: "win", // "win" или "lose"
-                    },
-                    {
-                        id: 2,
-                        gameKey: "game456",
-                        amount: 200,
-                        coefficient: 1.8,
-                        profit: -200, // отрицательное значение для проигрыша
-                        status: "lose",
-                    },
-                    {
-                        id: 3,
-                        gameKey: "game789",
-                        amount: 50,
-                        coefficient: 3.0,
-                        profit: 150,
-                        status: "win",
-                    },
-                    {
-                        id: 4,
-                        gameKey: "game012",
-                        amount: 300,
-                        coefficient: 1.5,
-                        profit: -300,
-                        status: "lose",
-                    },
-                    {
-                        id: 5,
-                        gameKey: "game345",
-                        amount: 150,
-                        coefficient: 2.0,
-                        profit: 150,
-                        status: "win",
-                    },
-                    {
-                        id: 6,
-                        gameKey: "game678",
-                        amount: 100,
-                        coefficient: 2.2,
-                        profit: -100,
-                        status: "lose",
-                    },
-                ];
-
-                const handleShowMore = () => {
-                    setVisibleCount((prevCount) => prevCount + 5);
-                };
-
                 return (
-                    <>
-                        <div className="header">
-                            <AiOutlineHistory className="icon" />
-                            <span>История ставок</span>
-                        </div>
-                        <div className="history__store">
-                            {initialBets.length === 0 ? (
-                                <div className="no-bets">Нет ставок для отображения.</div>
-                            ) : (
-                                initialBets.slice(0, visibleCount).map((bet) => (
-                                    <div
-                                        key={bet.id}
-                                        className={`bet-item ${bet.status === "win" ? "win" : "lose"}`}
-                                    >
-                                        <div className="bet-info">
-                                            <span className="amount">{bet.amount}₽</span>
-                                            <div className="results">
-                                                <span className="coefficient">{bet.coefficient}</span>
-                                                <span className="profit">
-                                                    {bet.status === "win" ? bet.profit : Math.abs(bet.profit)}₽
-                                                </span>
-                                            </div>
+                    <div className="history__store">
+                        {loading ? (
+                            <div>Загрузка...</div>
+                        ) : error ? (
+                            <div>{error}</div>
+                        ) : !Array.isArray(bets) || bets.length === 0 ? ( // Проверка на массив ставок
+                            <div>Ставок еще не было сделано.</div>
+                        ) : (
+                            bets.slice(0, visibleCount).map((bet) => (
+                                <div key={bet.id} className={`bet-item ${bet.is_win === "True" ? "True" : "False"}`}>
+                                    <div className="bet-info">
+                                        <span className="amount">{bet.amount}₽</span>
+                                        <div className="results">
+                                            <span className="coefficient">{bet.coefficient}</span>
+                                            <span className="profit">
+                                                {bet.is_win === "True" ? bet.profit : Math.abs(bet.profit)}₽
+                                            </span>
                                         </div>
-                                        <div className="game-key">{bet.gameKey}</div>
                                     </div>
-                                ))
-                            )}
-                            {initialBets.length > visibleCount && (
-                                <div className="scroll-indicator" onClick={handleShowMore}>
-                                    Показать больше ставок...
+                                    <div className="game-key">
+                                        {bet.gameKey.length > 20 ? `${bet.gameKey.slice(0, 20)}...` : bet.gameKey}
+                                    </div>
                                 </div>
-                            )}
-                        </div>
-                    </>
+                            ))
+                        )}
+                        {Array.isArray(bets) && bets.length > visibleCount && ( // Проверка на массив ставок для показа индикатора
+                            <div className="scroll-indicator" onClick={handleShowMore}>
+                                Показать больше ставок...
+                            </div>
+                        )}
+                    </div>
                 );
             case "limits":
                 return (

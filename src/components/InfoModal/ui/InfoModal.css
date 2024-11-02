@@ -97,7 +97,6 @@
     max-height: 300px;
     overflow-y: auto;
     padding-right: 10px;
-    /* Отступ справа для прокрутки */
 }
 
 .no-bets {
@@ -148,12 +147,12 @@
     margin-top: 8px;
 }
 
-.win {
+.True {
     border-left: 5px solid green;
     background-color: #e6ffe6;
 }
 
-.lose {
+.False {
     border-left: 5px solid red;
     background-color: #ffe6e6;
 }
@@ -412,4 +411,8 @@
 
 .amount__input__bring-out input::placeholder {
     color: #aaa;
+}
+
+.not_bet {
+    color: #000;
 }

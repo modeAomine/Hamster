@@ -6,6 +6,7 @@
     color: #fff;
     margin-bottom: 10px;
     border-radius: 10px;
+    min-width: 300px;
 }
 
 .bets-header {

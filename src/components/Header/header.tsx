@@ -8,7 +8,7 @@ import './ui/headers.css';
 import { HeaderProps } from "../../types/HeaderProps";
 import InfoModal from "../InfoModal/InfoModal";
 
-const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
+const Header: React.FC<HeaderProps> = ({ onSettingsClick, user, token }) => {
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const [soundEnabled, setSoundEnabled] = useState(true);
     const [musicEnabled, setMusicEnabled] = useState(true);
@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
 
     return (
         <div className="header__main">
-            <div className="header__balance">57 837р</div>
+            <div className="header__balance">{user ? `${user.balance}р`: "0"}</div>
             <div className="header__name__app">Lucky Hamster</div>
             <div className="header__settings_user" onClick={handleSettingsClick}>
                 <IoIosSettings size={24} />
@@ -152,7 +152,7 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick }) => {
                     </div>
                 )}
             </div>
-            <InfoModal isOpen={isModalOpen} onClose={closeModal} selectedItem={selectedItem} />
+            <InfoModal isOpen={isModalOpen} onClose={closeModal} selectedItem={selectedItem} token={token}/>
         </div>
     );
 };

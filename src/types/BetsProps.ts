@@ -1,6 +1,8 @@
-export interface Bet {
-    id: number;
-    user: string;
+export interface BetsProps {
+    id: string;
     amount: number;
-    currency: string;
+    coefficient: number;
+    profit: number;
+    is_win: string;
+    gameKey: string;
 }
