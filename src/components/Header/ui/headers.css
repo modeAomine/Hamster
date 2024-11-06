@@ -127,7 +127,7 @@
 }
 
 input:checked+.slider {
-    background-color: #7b1fa2; /* Фиолетовый цвет для активного состояния */
+    background-color: #7b1fa2;
 }
 
 input:checked+.slider:before {
